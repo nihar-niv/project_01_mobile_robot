@@ -5,50 +5,103 @@
 class Robot
 {
 private:
-    float posx, posy;
-    float heading;
-    float goalx, goaly;
-
+    float posX, posY;                   // represented in meters
+    float heading;                      // represented in radians
+    float goalX, goalY;                 // represented in meters
+    float tolerence;
 public:
     void setGoal(float x, float y)
     {
-        goalx = x;
-        goaly = y;
+        goalX = x;
+        goalY = y;
     }
 
     float getGoalX()
     {
-        return goalx;
+        return goalX;
     }
 
     float getGoalY()
     {
-        return goaly;
+        return goalY;
     }
 
     void moveForward(float distance)
     {
-        posx = posx + (distance * std::cos(heading));
-        posy = posy + (distance * std::sin(heading));
+        posX = posX + (distance * std::cos(heading));
+        posY = posY + (distance * std::sin(heading));
     }
 
     float getPosX()
     {
-        return posx;
+        return posX;
     }
 
     float getPosY()
     {
-        return posy;
+        return posY;
+    }
+
+    void setHeading(float newHeading)
+    {
+        heading = newHeading;
+    }
+
+    void navigateToGoal()
+    {
+        float deltaX = goalX - posX;
+        
+        if(std::abs(deltaX) <= tolerence)
+            std::cout << "X coordinate already within tolerance"; 
+        else
+        {
+            if(deltaX < 0)
+            {
+                setHeading(std::numbers::pi);
+                moveForward(std::abs(deltaX));
+            }
+            else if(deltaX > 0)
+            {
+                setHeading(0);
+                moveForward(std::abs(deltaX));
+            }
+        }
+
+        float deltaY = goalY - posY;
+        
+        if(std::abs(deltaY) <= tolerence)
+            std::cout << "Y coordinate already within tolerance"; 
+        else
+        {
+            if(deltaY < 0)
+            {
+                setHeading(std::numbers::pi * 3.0 / 2.0);
+                moveForward(std::abs(deltaY));
+            }
+            else if(deltaY > 0)
+            {
+                setHeading(std::numbers::pi / 2.0);
+                moveForward(std::abs(deltaY));
+            }
+        }
+    }
+
+    bool isGoalReached() 
+    {
+        float deltaX = goalX - posX;
+        float deltaY = goalY - posY;
+        float error = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
+        return (error <= tolerence);
     }
 
     Robot()
     {
-        posx = 0.0;
-        posy = 0.0;
+        posX = 0.0;
+        posY = 0.0;
         heading = std::numbers::pi / 2.0;
-        goalx = 0.0;
-        goaly = 0.0;
+        goalX = 0.0;
+        goalY = 0.0;
+        tolerence = 0.05;
     }
 };
 
@@ -56,13 +109,19 @@ int main()
 {
     Robot rob1;
 
-    rob1.setGoal(0.0, 1.0);
+    rob1.setGoal(1.0, 1.0);
 
     std::cout << "Goal X: " << rob1.getGoalX() << std::endl;
     std::cout << "Goal Y: " << rob1.getGoalY() << std::endl;
 
-    rob1.moveForward(1.0);
+    rob1.navigateToGoal();
 
-    std::cout << "Final position: (" << rob1.getPosX() << "," << rob1.getPosY() << ")" << std::endl;
-    return 0;
+    std::cout << "Final position: ("
+              << rob1.getPosX() << ", "
+              << rob1.getPosY() << ")" << std::endl;
+
+    std::cout << "Goal reached: "
+              << std::boolalpha
+              << rob1.isGoalReached()
+              << std::endl;
 }
