@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <numbers>
+#include <algorithm>
 
 class Robot
 {
@@ -9,6 +10,8 @@ private:
     float heading;      // represented in radians
     float goalX, goalY; // represented in meters
     float tolerence;
+    float Kp;
+    float maxVelocity;
 
 public:
     void setGoal(float x, float y)
@@ -46,6 +49,20 @@ public:
     void setHeading(float newHeading)
     {
         heading = newHeading;
+    }
+
+    float getGoalDistance()
+    {
+        float deltaX = goalX - posX;
+        float deltaY = goalY - posY;
+        float distance = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
+        return distance;
+    }
+
+    bool isGoalReached()
+    {
+        float distance = getGoalDistance();
+        return (distance <= tolerence);
     }
 
     void navigateToGoal()
@@ -93,18 +110,10 @@ public:
         }
     }
 
-    float getGoalDistance()
-    {
-        float deltaX = goalX - posX;
-        float deltaY = goalY - posY;
-        float distance = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
-        return distance;
-    }
-
-    bool isGoalReached()
+    float calculateVelocity()
     {
         float distance = getGoalDistance();
-        return (distance <= tolerence);
+        return std::min((Kp*distance), maxVelocity);
     }
 
     Robot()
@@ -115,6 +124,8 @@ public:
         goalX = 0.0;
         goalY = 0.0;
         tolerence = 0.035;
+        Kp = 1.0;
+        maxVelocity = 0.5;
     }
 };
 
